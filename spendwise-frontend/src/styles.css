@@ -1,0 +1,134 @@
+/* spendwise-frontend/src/styles.css */
+:root { font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; line-height: 1.4; }
+body { margin: 0; background: #0b1020; color: #e6ebf5; }
+a { color: inherit; }
+.container { max-width: 1000px; margin: 32px auto; padding: 0 16px; }
+.card { background: #141a33; border: 1px solid #1f2747; border-radius: 14px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+input[type="month"], input[type="text"] { background:#0f1530; border:1px solid #24305c; color:#e6ebf5; padding:8px 10px; border-radius:10px; }
+input[type="file"] { color:#e6ebf5; }
+button { background:#3b82f6; color:white; border:0; padding:10px 14px; border-radius:10px; cursor:pointer; }
+button.secondary { background:#1f2747; }
+button:disabled { opacity:.5; cursor:not-allowed; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { border-bottom: 1px solid #1f2747; padding: 8px; text-align: left; }
+.badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+.badge.ok { background:#064e3b; color:#d1fae5; }
+.badge.warn { background:#7c2d12; color:#ffedd5; }
+.badge.info { background:#1e3a8a; color:#dbeafe; }
+.flex-spread { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.h1 { font-size: 26px; margin: 0 0 12px; }
+.h2 { font-size: 18px; margin: 0 0 8px; opacity:.9; }
+.small { opacity:.8; font-size: 12px; }
+.hr { height:1px; background:#1f2747; margin:12px 0; border:0; }
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.month-btn {
+  background: #1f2747;
+  color: #e6ebf5;
+  border: 1px solid #2a3569;
+  padding: 8px 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.month-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+@media (max-width: 640px) {
+  .month-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+/* Month trigger & popover */
+.month-trigger {
+  margin-top: 8px;
+  background: #1f2747;
+  color: #e6ebf5;
+  border: 1px solid #2a3569;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 220px;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.month-trigger .chev { opacity: .8; }
+
+.popover {
+  position: absolute;
+  top: 72px; /* below the trigger inside the same card */
+  left: 0;
+  z-index: 40;
+  background: #141a33;
+  border: 1px solid #1f2747;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  width: 360px;
+  padding: 12px;
+}
+.pop-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.pop-header .year { font-weight: 600; }
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.month-btn {
+  background: #1f2747;
+  color: #e6ebf5;
+  border: 1px solid #2a3569;
+  padding: 10px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+}
+.month-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6; color: white;
+}
+.month-btn .dot {
+  position: absolute; right: 8px; top: 8px;
+  width: 6px; height: 6px; border-radius: 999px; background: #22c55e;
+}
+@media (max-width: 480px) {
+  .popover { width: 92vw; }
+  .month-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.month-trigger {
+  margin-top: 8px;
+  background: #1f2747; color: #e6ebf5;
+  border: 1px solid #2a3569; padding: 10px 14px;
+  border-radius: 10px; cursor: pointer; min-width: 220px;
+  display: inline-flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.month-trigger .chev { opacity: .8; }
+
+.popover {
+  position: absolute; top: 72px; left: 0; z-index: 40;
+  background: #141a33; border: 1px solid #1f2747; border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35); width: 360px; padding: 12px;
+}
+.pop-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.pop-header .year { font-weight: 600; }
+
+.month-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:8px; }
+.month-btn {
+  background:#1f2747; color:#e6ebf5; border:1px solid #2a3569;
+  padding:10px 0; border-radius:10px; cursor:pointer; position:relative;
+}
+.month-btn.active { background:#3b82f6; border-color:#3b82f6; color:white; }
+.month-btn .dot { position:absolute; right:8px; top:8px; width:6px; height:6px; border-radius:999px; background:#22c55e; }
+
+@media (max-width: 480px) {
+  .popover { width: 92vw; }
+  .month-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
