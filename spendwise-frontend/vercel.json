@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://spendwise-backend-env.eba-3haij2qx.us-east-2.elasticbeanstalk.com/api/:path*"
+    },
+    {
+      "source": "/((?!assets|api).*)",
+      "destination": "/"
+    }
+  ]
+}
