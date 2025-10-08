@@ -3,6 +3,7 @@ import { useState } from "react";
 import MonthPicker from "./components/MonthPicker.jsx";
 import UploadArea from "./components/UploadArea.jsx";
 import SummaryCard from "./components/SummaryCard.jsx";
+import TransactionsForMonth from "./components/TransactionsForMonth";
 
 export default function App() {
   const [month, setMonth] = useState("");
@@ -17,11 +18,13 @@ export default function App() {
           <MonthPicker value={month} onChange={setMonth} />
         </div>
       </div>
+      <SummaryCard month={month} />
 
       <UploadArea
         month={month}
         onCommitted={() => setRefreshKey((k) => k + 1)}
       />
+      <TransactionsForMonth month={month} />
 
       <div style={{ height: 16 }} />
       <SummaryCard month={month} refreshKey={refreshKey} />

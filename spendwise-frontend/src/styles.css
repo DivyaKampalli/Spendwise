@@ -132,3 +132,5 @@ button:disabled { opacity:.5; cursor:not-allowed; }
   .popover { width: 92vw; }
   .month-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+.amount-neg { color: #ef4444; font-variant-numeric: tabular-nums; }
+.amount-pos { color: #10b981; font-variant-numeric: tabular-nums; }

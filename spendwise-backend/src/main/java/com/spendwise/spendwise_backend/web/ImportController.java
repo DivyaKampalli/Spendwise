@@ -29,7 +29,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ImportController {
 
-    private final TransactionRepo txRepo;          // kept for saves; no de-dupe now
+    private final TransactionRepo txRepo;
     private final CategoryRepo categoryRepo;
     private final CategorizationService categorization;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -39,16 +39,20 @@ public class ImportController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(name = "month", required = false) String month,                // "YYYY-MM"
             @RequestParam(name = "dryRun", defaultValue = "true") boolean dryRun,
-            @RequestParam(name = "overrides", required = false) String overrides,
-            @RequestParam(name = "statementType", defaultValue = "debit") String statementType, // "debit" | "credit"
-            @RequestParam(name = "exclude", required = false) String exclude             // JSON array of hashes to skip on commit
+            @RequestParam(name = "overrides", required = false) String overrides,        // hash -> category name
+            @RequestParam(name = "descOverrides", required = false) String descOverrides,// hash -> new description
+            @RequestParam(name = "groupOverrides", required = false) String groupOverrides, // hash -> ESSENTIAL|SURPLUS|DEBT
+            @RequestParam(name = "statementType", defaultValue = "debit") String statementType,
+            @RequestParam(name = "exclude", required = false) String exclude
     ) throws Exception {
 
         int inserted = 0, skipped = 0, line = 1, rowIndex = 0;
         List<String> errors = new ArrayList<>();
         List<ImportPreviewRow> preview = new ArrayList<>();
 
-        Map<String, String> overrideMap = parseOverrides(overrides);
+        Map<String, String> overrideMap = parseStringMap(overrides);
+        Map<String, String> descOverrideMap = parseStringMap(descOverrides);
+        Map<String, CategoryGroup> groupOverrideMap = parseGroupMap(groupOverrides);
         Set<String> excludeSet = parseExcludeSet(exclude);
 
         ensureBaseCategories();
@@ -85,7 +89,7 @@ public class ImportController {
                         amount = amount.negate();
                     }
 
-                    // Category: income if positive, else guess
+                    // Suggested category (used if user doesn't override)
                     Category cat = (amount.signum() > 0)
                             ? ensureIncome()
                             : categorization.guess(desc);
@@ -93,10 +97,7 @@ public class ImportController {
                     rowIndex++;
                     String descNorm = desc.trim();
 
-                    // NO duplicate logic any more
-                    boolean duplicate = false;
-
-                    // Unique-per-row hash (helps overrides/exclude)
+                    // Unique-per-row hash (no de-dupe)
                     String hash = sha256(date + "|" + descNorm + "|" + amount.toPlainString() + "|" + rowIndex);
 
                     boolean inTargetMonth = true;
@@ -115,16 +116,39 @@ public class ImportController {
                                 false, inTargetMonth, hash, wouldImport
                         ));
                     } else {
-                        // apply category override if present for this hash
+                        // Apply description override if present
+                        String descOverride = descOverrideMap.get(hash);
+                        if (descOverride != null && !descOverride.isBlank()) {
+                            descNorm = descOverride.trim();
+                        }
+
+                        // Apply category override if present (by name)
                         String overrideName = overrideMap.get(hash);
                         if (overrideName != null && !overrideName.isBlank()) {
-                            var chosen = categoryRepo.findByNameIgnoreCase(overrideName.trim())
-                                    .orElseGet(() -> categoryRepo.save(
-                                            Category.builder().name(overrideName.trim()).isIncome(false)
-                                                    .group(CategoryGroup.SURPLUS) // default for brand-new
+                            String name = overrideName.trim();
+
+                            // Special-case: Income
+                            if (name.equalsIgnoreCase("Income")) {
+                                cat = ensureIncome();
+                            } else {
+                                var existing = categoryRepo.findByNameIgnoreCase(name);
+                                if (existing.isPresent()) {
+                                    cat = existing.get(); // use as-is (group from DB)
+                                } else {
+                                    // New category → take group override if present (else SURPLUS)
+                                    CategoryGroup desired = groupOverrideMap.getOrDefault(hash, CategoryGroup.SURPLUS);
+                                    cat = categoryRepo.save(
+                                            Category.builder()
+                                                    .name(name)
+                                                    .isIncome(false)
+                                                    .group(desired)
                                                     .build()
-                                    ));
-                            cat = chosen;
+                                    );
+                                }
+                            }
+                        } else {
+                            // No category override → keep suggested (cat)
+                            // If suggested is Income, group remains null; otherwise existing group stays.
                         }
 
                         boolean excluded = excludeSet.contains(hash);
@@ -176,12 +200,30 @@ public class ImportController {
 
     /* ---------- helpers ---------- */
 
-    private static Map<String, String> parseOverrides(String json) {
+    private static Map<String, String> parseStringMap(String json) {
         if (json == null || json.isBlank()) return Map.of();
         try {
             var mapper = new ObjectMapper();
             return mapper.readValue(json, mapper.getTypeFactory()
                     .constructMapType(Map.class, String.class, String.class));
+        } catch (Exception e) {
+            return Map.of();
+        }
+    }
+
+    private static Map<String, CategoryGroup> parseGroupMap(String json) {
+        if (json == null || json.isBlank()) return Map.of();
+        try {
+            var mapper = new ObjectMapper();
+            Map<String, String> raw = mapper.readValue(json, mapper.getTypeFactory()
+                    .constructMapType(Map.class, String.class, String.class));
+            Map<String, CategoryGroup> out = new HashMap<>();
+            raw.forEach((k,v) -> {
+                try {
+                    if (v != null && !v.isBlank()) out.put(k, CategoryGroup.valueOf(v.trim().toUpperCase()));
+                } catch (Exception ignored) {}
+            });
+            return out;
         } catch (Exception e) {
             return Map.of();
         }
